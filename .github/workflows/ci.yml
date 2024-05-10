@@ -2,7 +2,7 @@ name: ECS Continuous Integration
 run-name: ${{ github.actor }} is running Continuous Integration on GitHub Actions 🚀
 on: [push]
 env: 
-  ECR_ENDPOINT: 255945442255.dkr.ecr.us-east-1.amazonaws.com/luqman-node-app
+  ECR_ENDPOINT: 255945442255.dkr.ecr.us-east-1.amazonaws.com
 jobs:
   install-dependencies:
     runs-on: ubuntu-latest
