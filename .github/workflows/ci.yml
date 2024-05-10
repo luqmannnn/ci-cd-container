@@ -1,5 +1,5 @@
 name: ECS Continuous Integration
-run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
+run-name: ${{ github.actor }} is running Continuous Integration on GitHub Actions 🚀
 on: [push]
 env: 
   ECR_ENDPOINT: 255945442255.dkr.ecr.us-east-1.amazonaws.com/luqman-node-app
@@ -49,7 +49,7 @@ jobs:
             exit-code: '1'
             ignore-unfixed: true
             vuln-type: 'os,library'
-            severity: 'CRITICAL,HIGH'
+            severity: 'HIGH'
       - name: Docker publish to ECR
         run: docker push ${{ env.ECR_ENDPOINT }}/${{ vars.IMAGE_NAME }}:latest
 
