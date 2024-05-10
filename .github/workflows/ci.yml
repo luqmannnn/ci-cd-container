@@ -56,7 +56,7 @@ jobs:
   deploy-image-dev:
     needs: [build-and-scan-image]
     name: "Deployed image to dev"
-    uses: luqmannnn/ci-cd-container/.github/workflows/cd.yaml@main
+    uses: luqmannnn/ci-cd-container/.github/workflows/cd.yml@main
     with:
         target_env: "dev"
         version: "v1.1"
@@ -66,7 +66,7 @@ jobs:
   deploy-image-uat:
     needs: [build-and-scan-image]
     name: "Deployed image to uat"
-    uses: luqmannnn/ci-cd-container/.github/workflows/cd.yaml@main
+    uses: luqmannnn/ci-cd-container/.github/workflows/cd.yml@main
     with:
         target_env: "uat"
         version: "v1.1"
@@ -76,7 +76,7 @@ jobs:
   deploy-image-prod:
     needs: [build-and-scan-image, deploy-image-uat]
     name: "Deployed image to prod"
-    uses: luqmannnn/ci-cd-container/.github/workflows/cd.yaml@main
+    uses: luqmannnn/ci-cd-container/.github/workflows/cd.yml@main
     with:
         target_env: "prod"
         version: "v1.1"
