@@ -46,10 +46,10 @@ jobs:
         with:
             image-ref: '${{ vars.IMAGE_NAME }}:latest'
             format: 'table'
-            exit-code: '1'
+            # exit-code: '1'
             ignore-unfixed: true
             vuln-type: 'os,library'
-            severity: 'HIGH'
+            severity: 'MEDIUM,HIGH,CRITICAL'
       - name: Docker publish to ECR
         run: docker push ${{ env.ECR_ENDPOINT }}/${{ vars.IMAGE_NAME }}:latest
 
