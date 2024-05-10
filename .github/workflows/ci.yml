@@ -53,21 +53,32 @@ jobs:
       - name: Docker publish to ECR
         run: docker push ${{ env.ECR_ENDPOINT }}/${{ vars.IMAGE_NAME }}:latest
 
+  deploy-image-dev:
+    needs: [build-and-scan-image]
+    name: "Deployed image to dev"
+    uses: luqmannnn/ci-cd-containern/.github/workflows/cd.yaml@main
+    with:
+        target_env: "dev"
+        version: "v1.1"
+    secrets: inherit
+    if: ${{ github.ref_name == 'main' || github.ref_name == 'develop' || startsWith(github.ref_name, 'feature/') }}
 
-#   deploy:
-#     runs-on: ubuntu-latest
-#     needs: unit-testing
-#     steps:
-#     - uses: actions/checkout@v3
-#     - name: Use Node.js 18.x
-#       uses: actions/setup-node@v3
-#       with:
-#         node-version: 18.x
-#     - run: npm ci
-#     - name: serverless deploy
-#       uses: serverless/github-action@v3.2
-#       with:
-#         args: deploy
-#       env:
-#         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-#         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  deploy-image-uat:
+    needs: [build-and-scan-image]
+    name: "Deployed image to uat"
+    uses: luqmannnn/ci-cd-containern/.github/workflows/cd.yaml@main
+    with:
+        target_env: "uat"
+        version: "v1.1"
+    secrets: inherit
+    if: ${{ startsWith(github.ref_name, 'release/') }}
+
+  deploy-image-prod:
+    needs: [build-and-scan-image, deploy-image-uat]
+    name: "Deployed image to prod"
+    uses: luqmannnn/ci-cd-containern/.github/workflows/cd.yaml@main
+    with:
+        target_env: "prod"
+        version: "v1.1"
+    secrets: inherit
+    if: ${{ startsWith(github.ref_name, 'release/') }}

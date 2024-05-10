@@ -1,10 +1,35 @@
 name: ECS Continuous Deployment
 run-name: ${{ github.actor }} is running deployment on GitHub Actions 🚀
-on: [workflow_call]
+on:
+  workflow_dispatch:
+    inputs:
+        target_env:
+            type: environment
+            description: Select the environment
+  workflow_call:
+    inputs:
+        target_env:
+            type: string
+            required: true
+
 jobs:
-  deploy:
+  pre-deploy-step:
     runs-on: ubuntu-latest
+
     steps:
-    - uses: actions/checkout@v3
-    - name: Deploy image to ECS
-      run: echo "Deployed"
+      - uses: actions/checkout@v2
+
+      - name: print environment
+        run: | 
+          echo "env selected is ${{ inputs.target_env }}"
+  
+  deploy-step:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: deploy image to server
+        run: | 
+          echo "Deploying image..."
+          echo "Deploying image..."
+          echo "Deploying image..."
+          echo "Deployed successfully!"
