@@ -1,0 +1,10 @@
+name: ECS Continuous Deployment
+run-name: ${{ github.actor }} is running deployment on GitHub Actions 🚀
+on: [workflow_call]
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Deploy image to ECS
+      run: echo "Deployed"

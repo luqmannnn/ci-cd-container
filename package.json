@@ -1,0 +1,27 @@
+{
+  "name": "ci-cd-container",
+  "version": "1.0.0",
+  "description": "cicd for ecs",
+  "main": "index.js",
+  "scripts": {
+    "start": "node app.js",
+    "test": "jest" 
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/luqmannnn/ci-cd-container.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/luqmannnn/ci-cd-container/issues"
+  },
+  "homepage": "https://github.com/luqmannnn/ci-cd-container#readme",
+  "dependencies": {
+    "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "supertest": "^7.0.0"
+  }
+}
