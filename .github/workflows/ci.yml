@@ -42,9 +42,14 @@ jobs:
             docker build -t ${{ vars.IMAGE_NAME }} .
             docker tag ${{ vars.IMAGE_NAME }}:latest ${{ env.ECR_ENDPOINT }}/${{ vars.IMAGE_NAME }}:latest
       - name: Run image scan
-        run: |
-            docker scout overview
-            docker scout cves local://${{ vars.IMAGE_NAME }}:latest
+        uses: aquasecurity/trivy-action@master
+        with:
+            image-ref: '${{ vars.IMAGE_NAME }}:latest'
+            format: 'table'
+            exit-code: '1'
+            ignore-unfixed: true
+            vuln-type: 'os,library'
+            severity: 'CRITICAL,HIGH'
       - name: Docker publish to ECR
         run: docker push ${{ env.ECR_ENDPOINT }}/${{ vars.IMAGE_NAME }}:latest
 
