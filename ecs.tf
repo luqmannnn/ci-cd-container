@@ -23,8 +23,8 @@ resource "aws_ecs_task_definition" "own_task_definition" {
   # For nginx image
   container_definitions = templatefile("./files/ecr-task-definition.json", {
     image_url        = "${var.ecr_url}/${var.ecr_image_name}:latest"
+    port_name        = var.ecs_port_name
     container_name   = var.ecs_container_name
-    container_port   = var.ecs_container_port
     log_group_region = "us-east-1"
     log_group_name   = "/ecs/${var.ecs_task_defn_family}" # Change accordingly
     log_group_prefix = "ecs"
