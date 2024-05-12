@@ -52,7 +52,7 @@ resource "aws_ecs_service" "own_service" {
 
   load_balancer {
     target_group_arn = aws_lb_target_group.ecs-alb-tg.arn
-    container_name   = "NGINX"
+    container_name   = var.ecs_container_name
     container_port   = 80
   }
 
