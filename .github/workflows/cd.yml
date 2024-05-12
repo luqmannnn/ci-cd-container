@@ -1,65 +1,79 @@
-name: ECS Continuous Deployment
-run-name: ${{ github.actor }} is running deployment on GitHub Actions 🚀
+name: ECS Cluster Creation, Deployment and Destruction
+run-name: ${{ github.actor }} is making changes to ECS via GitHub Actions 🚀
 on:
   workflow_dispatch:
     inputs:
         target_env:
             type: environment
             description: Select the environment
+        action:
+            type: choice
+            options:
+                - create
+                - destroy
+                - deploy
+            description: Select the action, whether to create or destroy ECS cluster
   workflow_call:
     inputs:
         target_env:
             type: string
             required: true
-
+        action:
+            type: string
+            required: true
 jobs:
-  pre-deploy-step:
-    runs-on: ubuntu-latest
+    pre-action-step:
+        runs-on: ubuntu-latest
+    
+        steps:
+        - uses: actions/checkout@v2
+    
+        - name: print environment and action
+          run: | 
+            echo "env selected is ${{ inputs.target_env }}"
+            echo "action selected is ${{ inputs.action }}"
 
-    steps:
-      - uses: actions/checkout@v2
+    create-or-delete-ecs-cluster:
+        needs: [pre-action-step]
+        runs-on: ubuntu-latest
 
-      - name: print environment
-        run: | 
-          echo "env selected is ${{ inputs.target_env }}"
-  
-  deploy-step:
-    runs-on: ubuntu-latest
+        steps:
+        - uses: actions/checkout@v2
 
-    steps:
-      - name: checkout code
-        uses: actions/checkout@v2
+        - name: Configure AWS credentials
+          uses: aws-actions/configure-aws-credentials@v1
+          with:
+            aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            aws-region: us-east-1
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
+        - name: Terraform init
+          run: terraform init
 
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@main
+        - name: Terraform workspace list
+          run: terraform workspace list
 
-      - name: Fill in the new image ID in the Amazon ECS task definition
-        id: task-def
-        uses: aws-actions/amazon-ecs-render-task-definition@master
-        with:
-          task-definition: ${{ vars.ECS_TASK_DEFN_NAME }}-${{ inputs.target_env }}
-          container-name: ${{ vars.ECS_CONTAINER_NAME }}-${{ inputs.target_env }}
-          image: 255945442255.dkr.ecr.us-east-1.amazonaws.com/${{ vars.IMAGE_NAME }}:latest
+        - name: Terraform workspace new environment and select
+          run: |
+            terraform workspace select ${{ github.event.inputs.target_env }} || terraform workspace new ${{ github.event.inputs.target_env }}
+            terraform workspace list
 
-      - name: Deploy Amazon ECS task definition
-        uses: aws-actions/amazon-ecs-deploy-task-definition@master
-        with:
-          task-definition: ${{ steps.task-def.outputs.task-definition }}
-          service: ${{ vars.ECS_SERVICE_NAME }}-${{ inputs.target_env }}
-          cluster: ${{ vars.ECS_CLUSTER_NAME }}-${{ inputs.target_env }}
-          wait-for-service-stability: true
+        - name: Terraform apply or destroy
+          run: |
+            if [ "${{ github.event.inputs.action }}" = "create" ] || [ "${{ github.event.inputs.action }}" = "deploy"  ]; then
+              terraform plan -var-file=${{ github.event.inputs.target_env }}.tfvars
+              terraform apply -var-file=${{ github.event.inputs.target_env }}.tfvars --auto-approve
+            elif [ "${{ github.event.inputs.action }}" = "destroy" ]; then
+              terraform destroy -var-file=${{ github.event.inputs.target_env }}.tfvars -auto-approve
+            fi
 
-      - name: deploy image to server
-        run: | 
-          echo "Deploying image..."
-          echo "Deploying image..."
-          echo "Deploying image..."
-          echo "Deployed successfully!"
+    summary:
+        needs: [create-or-delete-ecs-cluster]
+        runs-on: ubuntu-latest
+        steps:
+            - name: Adding markdown
+              run: |
+                echo '## 🚀 Preparing Summary 🚀' >> $GITHUB_STEP_SUMMARY
+                echo '### Action ran: ${{ inputs.action }}'  >> $GITHUB_STEP_SUMMARY
+                echo '### Environment chosen: ${{ inputs.target_env }}'  >> $GITHUB_STEP_SUMMARY
+                echo '### Outcome: Successful 🚀'  >> $GITHUB_STEP_SUMMARY
