@@ -45,6 +45,9 @@ resource "aws_ecs_service" "own_service" {
   launch_type      = "FARGATE"
   platform_version = "LATEST"
 
+  # Force a new deployment of task definition
+  force_new_deployment = true
+
   deployment_circuit_breaker {
     enable          = true
     rollback        = true
