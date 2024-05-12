@@ -15,7 +15,7 @@ resource "aws_lb" "ecs-alb" {
 resource "aws_lb_target_group" "ecs-alb-tg" {
   name        = "luqman-ecs-target-group"
   target_type = "ip"
-  port        = 80
+  port        = 3000
   protocol    = "HTTP"
   vpc_id      = data.aws_vpc.existing_vpc.id
   health_check {
@@ -27,7 +27,7 @@ resource "aws_lb_target_group" "ecs-alb-tg" {
 
 resource "aws_lb_listener" "front_end" {
   load_balancer_arn = aws_lb.ecs-alb.arn
-  port              = "80"
+  port              = "3000"
   protocol          = "HTTP"
 
   default_action {
