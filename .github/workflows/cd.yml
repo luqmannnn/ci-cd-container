@@ -55,16 +55,16 @@ jobs:
 
         - name: Terraform workspace new environment and select
           run: |
-            terraform workspace select ${{ github.event.inputs.target_env }} || terraform workspace new ${{ github.event.inputs.target_env }}
+            terraform workspace select ${{ inputs.target_env }} || terraform workspace new ${{ inputs.target_env }}
             terraform workspace list
 
         - name: Terraform apply or destroy
           run: |
-            if [ "${{ github.event.inputs.action }}" = "create" ] || [ "${{ github.event.inputs.action }}" = "deploy"  ]; then
-              terraform plan -var-file=${{ github.event.inputs.target_env }}.tfvars
-              terraform apply -var-file=${{ github.event.inputs.target_env }}.tfvars --auto-approve
-            elif [ "${{ github.event.inputs.action }}" = "destroy" ]; then
-              terraform destroy -var-file=${{ github.event.inputs.target_env }}.tfvars -auto-approve
+            if [ "${{ inputs.action }}" = "create" ] || [ "${{ inputs.action }}" = "deploy"  ]; then
+              terraform plan -var-file=${{ inputs.target_env }}.tfvars
+              terraform apply -var-file=${{ inputs.target_env }}.tfvars --auto-approve
+            elif [ "${{ inputs.action }}" = "destroy" ]; then
+              terraform destroy -var-file=${{ inputs.target_env }}.tfvars -auto-approve
             fi
 
     summary:
