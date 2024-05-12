@@ -33,3 +33,39 @@ variable "ecs_task_defn_family" {
     type        = string
     default     = "luqmanecstaskdef"
 }
+
+variable "ecs_container_name" {
+    description = "ECS container name"
+    type        = string
+    default     = "luqman-container"
+}
+
+variable "ecs_port_name" {
+    description = "ECS port name"
+    type        = string
+    default     = "luqman-3000-tcp"
+}
+
+variable "ecs_host_port" {
+    description = "ECS host port"
+    type        = number
+    default     = 3000
+}
+
+variable "ecs_container_port" {
+    description = "ECS container port"
+    type        = number
+    default     = 3000    
+}
+
+variable "ecr_url" {
+    description = "ECR URL"
+    type        = string
+    default     = "255945442255.dkr.ecr.us-east-1.amazonaws.com"
+}
+
+variable "ecr_image_name" {
+    description = "ECR image name"
+    type        = string
+    default     = "luqman-node-app"
+}

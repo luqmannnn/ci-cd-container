@@ -8,8 +8,8 @@
       "portMappings": [
         {
             "name": "${port_name}",
-            "containerPort": 8080,
-            "hostPort": 8080,
+            "containerPort": "${container_port}",
+            "hostPort": "${host_port}",
             "protocol": "tcp",
             "appProtocol": "http"
         }
