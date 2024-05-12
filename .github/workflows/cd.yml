@@ -43,18 +43,18 @@ jobs:
 
       - name: Fill in the new image ID in the Amazon ECS task definition
         id: task-def
-        uses: aws-actions/amazon-ecs-render-task-definition@main
+        uses: aws-actions/amazon-ecs-render-task-definition@master
         with:
           task-definition: ${{ vars.ECS_TASK_DEFN_NAME }}-${{ inputs.target_env }}
-          container-name: ${{ env.CONTAINER_NAME }}
-          image: ${{ steps.build-image.outputs.image }}
+          container-name: ${{ vars.ECS_CONTAINER_NAME }}-${{ inputs.target_env }}
+          image: 255945442255.dkr.ecr.us-east-1.amazonaws.com/${{ vars.IMAGE_NAME }}:latest
 
       - name: Deploy Amazon ECS task definition
-        uses: aws-actions/amazon-ecs-deploy-task-definition@main
+        uses: aws-actions/amazon-ecs-deploy-task-definition@master
         with:
           task-definition: ${{ steps.task-def.outputs.task-definition }}
-          service: ${{ env.ECS_SERVICE }}
-          cluster: ${{ env.ECS_CLUSTER }}
+          service: ${{ vars.ECS_SERVICE_NAME }}-${{ inputs.target_env }}
+          cluster: ${{ vars.ECS_CLUSTER_NAME }}-${{ inputs.target_env }}
           wait-for-service-stability: true
 
       - name: deploy image to server
