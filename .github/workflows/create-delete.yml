@@ -54,7 +54,7 @@ jobs:
           run: |
             if [ "${{ github.event.inputs.action }}" = "create" ]; then
               terraform plan -var-file=${{ github.event.inputs.target_env }}.tfvars
-              terraform apply -var-file=${{ github.event.inputs.target_env }}.tfvars
+              terraform apply -var-file=${{ github.event.inputs.target_env }}.tfvars --auto-approve
             elif [ "${{ github.event.inputs.action }}" = "destroy" ]; then
               terraform destroy -var-file=${{ github.event.inputs.target_env }}.tfvars -auto-approve
             fi
