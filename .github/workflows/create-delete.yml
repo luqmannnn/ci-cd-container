@@ -26,6 +26,7 @@ jobs:
             echo "action selected is ${{ inputs.action }}"
 
     create-or-delete-ecs-cluster:
+        needs: [pre-action-step]
         runs-on: ubuntu-latest
 
         steps:
@@ -38,31 +39,33 @@ jobs:
             aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
             aws-region: us-east-1
 
-        # - name: Terraform init
-        #   run: terraform init
+        - name: Terraform init
+          run: terraform init
 
-        # - name: Terraform workspace list
-        #   run: terraform workspace list
+        - name: Terraform workspace list
+          run: terraform workspace list
 
-        # - name: Terraform workspace new environment and select
-        #   run: |
-        #     terraform workspace select ${{ github.event.inputs.target_env }} || terraform workspace new ${{ github.event.inputs.target_env }}
-        #     terraform workspace list
+        - name: Terraform workspace new environment and select
+          run: |
+            terraform workspace select ${{ github.event.inputs.target_env }} || terraform workspace new ${{ github.event.inputs.target_env }}
+            terraform workspace list
 
-        # - name: Terraform plan or destroy
-        #   run: |
-        #     if [ "${{ github.event.inputs.action }}" = "create" ]; then
-        #       terraform plan -var-file=${{ github.event.inputs.target_env }}.tfvars
-        #       terraform apply -var-file=${{ github.event.inputs.target_env }}.tfvars
-        #     elif [ "${{ github.event.inputs.action }}" = "destroy" ]; then
-        #       terraform destroy -var-file=${{ github.event.inputs.target_env }}.tfvars -auto-approve
-        #     fi
-
-        - name: Terraform plan or destroy
+        - name: Terraform apply or destroy
           run: |
             if [ "${{ github.event.inputs.action }}" = "create" ]; then
-                echo "CREATE"
+              terraform plan -var-file=${{ github.event.inputs.target_env }}.tfvars
+              terraform apply -var-file=${{ github.event.inputs.target_env }}.tfvars
             elif [ "${{ github.event.inputs.action }}" = "destroy" ]; then
-                echo "DELETE"
+              terraform destroy -var-file=${{ github.event.inputs.target_env }}.tfvars -auto-approve
             fi
-          
+
+    summary:
+        needs: [create-or-delete-ecs-cluster]
+        runs-on: ubuntu-latest
+        steps:
+            - name: Adding markdown
+              run: |
+                echo '## 🚀 Preparing Summary 🚀' >> $GITHUB_STEP_SUMMARY
+                echo '### Action ran: ${{ inputs.action }}'  >> $GITHUB_STEP_SUMMARY
+                echo '### Environment chosen: ${{ inputs.target_env }}'  >> $GITHUB_STEP_SUMMARY
+                echo '### Outcome: Successful 🚀'  >> $GITHUB_STEP_SUMMARY
