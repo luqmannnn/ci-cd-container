@@ -75,6 +75,8 @@ jobs:
             - name: Adding markdown
               run: |
                 echo '## 🚀 Preparing Summary 🚀' >> $GITHUB_STEP_SUMMARY
-                echo '### Action ran: ${{ inputs.action }}'  >> $GITHUB_STEP_SUMMARY
-                echo '### Environment chosen: ${{ inputs.target_env }}'  >> $GITHUB_STEP_SUMMARY
-                echo '### Outcome: Successful 🚀'  >> $GITHUB_STEP_SUMMARY
+
+                echo "| Environment           | Action                | Status        |" >> $GITHUB_STEP_SUMMARY
+                echo "|-----------------------|-----------------------|---------------|" >> $GITHUB_STEP_SUMMARY
+                echo "| ${{ inputs.target_env }}  | ${{ inputs.action }}  | Successful 🚀 |" >> $GITHUB_STEP_SUMMARY
+               
