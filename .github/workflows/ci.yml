@@ -15,6 +15,8 @@ jobs:
   code-unit-testing:
     runs-on: ubuntu-latest
     needs: install-dependencies
+    outputs:
+      status: ${{ job.status }}
     steps:
       - name: Check out repository code
         uses: actions/checkout@v3
@@ -26,6 +28,8 @@ jobs:
   code-vulnerability-scanning:
     runs-on: ubuntu-latest
     needs: install-dependencies
+    outputs:
+      status: ${{ job.status }}
     steps:
         - name: Check out repository code
           uses: actions/checkout@v3
@@ -41,6 +45,8 @@ jobs:
   iac-vulnerability-scanning:
     runs-on: ubuntu-latest
     needs: install-dependencies
+    outputs:
+      status: ${{ job.status }}
     steps:
       - name: Check out repository code
         uses: actions/checkout@v3
@@ -112,3 +118,23 @@ jobs:
         action: "deploy"
     secrets: inherit
     if: ${{ startsWith(github.ref_name, 'release/') }}
+
+  summary:
+    needs: [code-unit-testing, code-vulnerability-scanning, iac-vulnerability-scanning]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Adding markdown
+        run: |
+          CODE_UNIT_STATUS=${{ needs.code-unit-testing.outputs.status }}
+          CODE_SCAN_STATUS=${{ needs.code-vulnerability-scanning.outputs.status }}
+          IAC_SCAN_STATUS=${{ needs.iac-vulnerability-scanning.outputs.status }}
+
+          echo '## 🚀 Preparing Summary 🚀' >> $GITHUB_STEP_SUMMARY
+          echo '' >> $GITHUB_STEP_SUMMARY
+
+          echo "| Job Name        | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----------------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| code-scan       | $CODE_SCAN_STATUS |" >> $GITHUB_STEP_SUMMARY
+          echo "| iac-scan        | $IAC_SCAN_STATUS  |" >> $GITHUB_STEP_SUMMARY
+          echo "| unit-scan       | $CODE_UNIT_STATUS |" >> $GITHUB_STEP_SUMMARY
+          
