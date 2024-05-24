@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Run installation of dependencies commands
         run: npm install
 
@@ -19,7 +19,7 @@ jobs:
       status: ${{ job.status }}
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Run installation of dependencies commands
         run: npm install
       - name: Run unit testing command
@@ -32,7 +32,7 @@ jobs:
       status: ${{ job.status }}
     steps:
         - name: Check out repository code
-          uses: actions/checkout@v3
+          uses: actions/checkout@v4
         - name: Install Snyk CLI
           run: npm install -g snyk
         - name: Run Snyk to check for vulnerabilities
@@ -49,7 +49,7 @@ jobs:
       status: ${{ job.status }}
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Install Snyk CLI
         run: npm install -g snyk
       - name: Run Snyk Code Scan And Check Snyk Scan Results
@@ -64,7 +64,7 @@ jobs:
     needs: [code-unit-testing, code-vulnerability-scanning, iac-vulnerability-scanning]
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
