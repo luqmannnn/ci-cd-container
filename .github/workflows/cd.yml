@@ -68,13 +68,13 @@ jobs:
               terraform destroy -var-file=${{ inputs.target_env }}.tfvars -auto-approve
             fi
 
-    summary:
+    deploy_summary:
         needs: [create-or-delete-ecs-cluster]
         runs-on: ubuntu-latest
         steps:
             - name: Adding markdown
               run: |
-                echo '## 🚀 Preparing Summary 🚀' >> $GITHUB_STEP_SUMMARY
+                echo '## 🚀 Preparing Deployment Summary 🚀' >> $GITHUB_STEP_SUMMARY
 
                 echo "| Environment           | Action                | Status        |" >> $GITHUB_STEP_SUMMARY
                 echo "|-----------------------|-----------------------|---------------|" >> $GITHUB_STEP_SUMMARY
