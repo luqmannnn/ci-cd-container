@@ -42,6 +42,23 @@ jobs:
           with:
             args: --severity-threshold=high
 
+  # iac-vulnerability-scanning:
+  #   runs-on: ubuntu-latest
+  #   needs: install-dependencies
+  #   outputs:
+  #     status: ${{ job.status }}
+  #   steps:
+  #     - name: Check out repository code
+  #       uses: actions/checkout@v4
+  #     - name: Install Snyk CLI
+  #       run: npm install -g snyk
+  #     - name: Run Snyk Code Scan And Check Snyk Scan Results
+  #       uses: snyk/actions/iac@master
+  #       env:
+  #         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+  #       with:
+  #         args: "--report --severity-threshold=high --scan=resource-changes"
+
   iac-vulnerability-scanning:
     runs-on: ubuntu-latest
     needs: install-dependencies
@@ -53,11 +70,16 @@ jobs:
       - name: Install Snyk CLI
         run: npm install -g snyk
       - name: Run Snyk Code Scan And Check Snyk Scan Results
-        uses: snyk/actions/iac@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        run: |
+          snyk iac test --severity-threshold=high
+          snyk iac test --severity-threshold=high --json > snyk_iac_report.json
+      - name: Upload Snyk IaC Report
+        uses: actions/upload-artifact@v3
         with:
-          args: "--report --severity-threshold=high --scan=resource-changes"
+          name: snyk-iac-report
+          path: snyk_iac_report.json
 
   build-and-scan-image:
     runs-on: ubuntu-latest
