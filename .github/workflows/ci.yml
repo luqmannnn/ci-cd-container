@@ -120,7 +120,7 @@ jobs:
           snyk test --severity-threshold=high --json > snyk-results.json
 
       - name: Upload Snyk Scan Results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4.3.0
         with:
           name: snyk-scan-results
           path: snyk-results.json
@@ -142,7 +142,7 @@ jobs:
           snyk iac test --severity-threshold=high
           snyk iac test --severity-threshold=high --json > snyk_iac_report.json
       - name: Upload Snyk IaC Report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4.3.0
         with:
           name: snyk-iac-report
           path: snyk_iac_report.json
@@ -154,7 +154,7 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v4.1.5
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v4
         with:
             aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
             aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -176,7 +176,7 @@ jobs:
           severity: 'MEDIUM,HIGH,CRITICAL'
           output: 'docker-image-scan.json'
       - name: Upload Docker Trivy Report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4.3.0
         with:
           name: docker-image-scan
           path: docker-image-scan.json
