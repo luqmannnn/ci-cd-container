@@ -17,7 +17,7 @@
   },
   "homepage": "https://github.com/luqmannnn/ci-cd-container#readme",
   "dependencies": {
-    "express": "^4.19.2"
+    "express": "^4.21.0"
   },
   "devDependencies": {
     "chai": "^5.1.1",
