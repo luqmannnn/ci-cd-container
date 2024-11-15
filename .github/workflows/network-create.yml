@@ -1,0 +1,43 @@
+name: VPC Creation or Destruction
+run-name: ${{ github.actor }} is making changes to VPC via GitHub Actions 🚀
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        type: choice
+        options:
+            - create
+            - destroy
+        description: Select the action, whether to create or destroy VPC cluster
+
+jobs:
+  create-network:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: network
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+
+    - name: Terraform init
+      run: terraform init
+
+    - name: Terraform plan
+      run: terraform plan
+
+    - name: Terraform apply or destroy
+      run: |
+        if [ "${{ inputs.action }}" = "create" ] || [ "${{ inputs.action }}" = "deploy"  ]; then
+          # Comment out apply to prevent creation of cluster
+          terraform apply --auto-approve
+        elif [ "${{ inputs.action }}" = "destroy" ]; then
+          terraform destroy --auto-approve
+        fi
