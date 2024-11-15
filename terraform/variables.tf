@@ -46,18 +46,6 @@ variable "ecs_port_name" {
   default     = "luqman-3000-tcp"
 }
 
-variable "ecs_host_port" {
-  description = "ECS host port"
-  type        = number
-  default     = 3000
-}
-
-variable "ecs_container_port" {
-  description = "ECS container port"
-  type        = number
-  default     = 3000
-}
-
 variable "ecr_url" {
   description = "ECR URL"
   type        = string
