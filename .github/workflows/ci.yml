@@ -1,6 +1,13 @@
 name: ECS Continuous Integration
 run-name: ${{ github.actor }} is running Continuous Integration on GitHub Actions 🚀
-on: [push]
+on: 
+  push:
+    branches:
+      - feature/**
+      - main
+      - develop
+      - release/**
+      - hotfix/**
 env: 
   ECR_ENDPOINT: 255945442255.dkr.ecr.us-east-1.amazonaws.com
 jobs:
@@ -14,6 +21,9 @@ jobs:
 
   code-ql-scanning:
     name: Analyze (${{ matrix.language }})
+    defaults:
+      run:
+        working-directory: files
     # Runner size impacts CodeQL analysis time. To learn more, please see:
     #   - https://gh.io/recommended-hardware-resources-for-running-codeql
     #   - https://gh.io/supported-runners-and-hardware-resources
@@ -84,9 +94,12 @@ jobs:
       with:
         category: "/language:${{matrix.language}}"
 
-  code-unit-testing:
+  snyk-code-unit-testing:
     runs-on: ubuntu-latest
     needs: [install-dependencies, code-ql-scanning]
+    defaults:
+      run:
+        working-directory: files
     outputs:
       status: ${{ job.status }}
     steps:
@@ -100,9 +113,40 @@ jobs:
         run: |
           npm test
 
-  code-vulnerability-scanning:
+  snyk-code-vulnerability-scanning:
     runs-on: ubuntu-latest
     needs: [install-dependencies, code-ql-scanning]
+    defaults:
+      run:
+        working-directory: files
+    outputs:
+      status: ${{ job.status }}
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4.1.5
+
+      - name: Install Snyk CLI
+        run: npm install -g snyk
+
+      - name: Run Snyk to check for vulnerabilities
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        run: | 
+          snyk code test --severity-threshold=high
+          snyk code test --severity-threshold=high --json > snyk_code_results.json
+
+      - name: Upload Snyk Scan Results
+        uses: actions/upload-artifact@v4.3.0
+        with:
+          name: snyk-scan-results
+          path: snyk_code_results.json
+
+  snyk-lib-vulnerability-scanning:
+    runs-on: ubuntu-latest
+    needs: [install-dependencies, code-ql-scanning]
+    defaults:
+      run:
+        working-directory: files
     outputs:
       status: ${{ job.status }}
     steps:
@@ -117,17 +161,20 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         run: | 
           snyk test --severity-threshold=high
-          snyk test --severity-threshold=high --json > snyk-results.json
+          snyk test --severity-threshold=high --json > snyk_lib_results.json
 
       - name: Upload Snyk Scan Results
         uses: actions/upload-artifact@v4.3.0
         with:
           name: snyk-scan-results
-          path: snyk-results.json
+          path: snyk_lib_results.json
 
-  iac-vulnerability-scanning:
+  snyk-iac-vulnerability-scanning:
     runs-on: ubuntu-latest
     needs: [install-dependencies, code-ql-scanning]
+    defaults:
+      run:
+        working-directory: terraform
     outputs:
       status: ${{ job.status }}
     steps:
@@ -147,9 +194,45 @@ jobs:
           name: snyk-iac-report
           path: snyk_iac_report.json
 
+  trivy-iac-vulnerability-scanning:
+    runs-on: ubuntu-latest
+    needs: [install-dependencies, code-ql-scanning]
+    defaults:
+      run:
+        working-directory: terraform
+    outputs:
+      status: ${{ job.status }}
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4.1.5
+      - name: Run Trivy vulnerability scanner in IaC mode
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: 'config'
+          hide-progress: true
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          exit-code: '1'
+          ignore-unfixed: true
+          severity: 'CRITICAL,HIGH'
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-results.sarif'
+      - name: Upload Snyk IaC Report
+        uses: actions/upload-artifact@v4.3.0
+        with:
+          name: snyk-iac-report
+          path: snyk_iac_report.json
+
   build-and-scan-image:
     runs-on: ubuntu-latest
-    needs: [code-unit-testing, code-vulnerability-scanning, iac-vulnerability-scanning]
+    outputs:
+      status: ${{ job.status }}
+    needs: [snyk-code-unit-testing, snyk-lib-vulnerability-scanning, snyk-code-vulnerability-scanning, snyk-iac-vulnerability-scanning, trivy-iac-vulnerability-scanning]
+    defaults:
+      run:
+        working-directory: files
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4.1.5
@@ -165,7 +248,7 @@ jobs:
         run: |
             docker build -t ${{ vars.IMAGE_NAME }} .
             docker tag ${{ vars.IMAGE_NAME }}:latest ${{ env.ECR_ENDPOINT }}/${{ vars.IMAGE_NAME }}:latest
-      - name: Run image scan
+      - name: Run Trivy image scan
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: '${{ vars.IMAGE_NAME }}:latest'
@@ -180,6 +263,19 @@ jobs:
         with:
           name: docker-image-scan
           path: docker-image-scan.json
+      - name: Install Snyk CLI
+        run: npm install -g snyk
+      - name: Run Snyk Container Scan And Check Snyk Scan Results
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        run: |
+          snyk container test ${{ vars.IMAGE_NAME }}:latest --severity-threshold=high
+          snyk container test ${{ vars.IMAGE_NAME }}:latest --severity-threshold=high --json > snyk_container_report.json
+      - name: Upload Snyk Container Report
+        uses: actions/upload-artifact@v4.3.0
+        with:
+          name: snyk-container-report
+          path: snyk_container_report.json
       - name: Docker publish to ECR
         run: docker push ${{ env.ECR_ENDPOINT }}/${{ vars.IMAGE_NAME }}:latest
 
@@ -188,8 +284,8 @@ jobs:
     name: "Deployed image to dev"
     uses: luqmannnn/ci-cd-container/.github/workflows/cd.yml@main
     with:
-        target_env: "dev"
-        action: "deploy"
+      target_env: "dev"
+      action: "deploy"
     secrets: inherit
     if: ${{ github.ref_name == 'main' || github.ref_name == 'develop' || startsWith(github.ref_name, 'feature/') }}
 
@@ -198,8 +294,8 @@ jobs:
     name: "Deployed image to uat"
     uses: luqmannnn/ci-cd-container/.github/workflows/cd.yml@main
     with:
-        target_env: "uat"
-        action: "deploy"
+      target_env: "uat"
+      action: "deploy"
     secrets: inherit
     if: ${{ startsWith(github.ref_name, 'release/') }}
 
@@ -208,27 +304,31 @@ jobs:
     name: "Deployed image to prod"
     uses: luqmannnn/ci-cd-container/.github/workflows/cd.yml@main
     with:
-        target_env: "prod"
-        action: "deploy"
+      target_env: "prod"
+      action: "deploy"
     secrets: inherit
     if: ${{ startsWith(github.ref_name, 'release/') }}
 
   build_summary:
-    needs: [code-unit-testing, code-vulnerability-scanning, iac-vulnerability-scanning]
+    needs: [snyk-code-unit-testing, snyk-code-vulnerability-scanning, snyk-iac-vulnerability-scanning, trivy-iac-vulnerability-scanning, build-and-scan-image]
     runs-on: ubuntu-latest
     steps:
       - name: Adding markdown
         run: |
-          CODE_UNIT_STATUS=${{ needs.code-unit-testing.outputs.status }}
-          CODE_SCAN_STATUS=${{ needs.code-vulnerability-scanning.outputs.status }}
-          IAC_SCAN_STATUS=${{ needs.iac-vulnerability-scanning.outputs.status }}
+          SNYK_CODE_UNIT_STATUS=${{ needs.snyk-code-unit-testing.outputs.status }}
+          SNYK_CODE_UNIT_STATUS=${{ needs.snyk-code-vulnerability-scanning.outputs.status }}
+          SNYK_IAC_SCAN_STATUS=${{ needs.snyk-iac-vulnerability-scanning.outputs.status }}
+          TRIVY_IAC_SCAN_STATUS=${{ needs.trivy-iac-vulnerability-scanning.outputs.status }}
+          DOCKER_BUILD_SCAN_STATUS=${{ needs.build-and-scan-image.outputs.status }}
 
           echo '## 🚀 Preparing Build Summary 🚀' >> $GITHUB_STEP_SUMMARY
           echo '' >> $GITHUB_STEP_SUMMARY
 
           echo "| Job Name        | Status |" >> $GITHUB_STEP_SUMMARY
           echo "|-----------------|--------|" >> $GITHUB_STEP_SUMMARY
-          echo "| code-scan       | $CODE_SCAN_STATUS |" >> $GITHUB_STEP_SUMMARY
-          echo "| iac-scan        | $IAC_SCAN_STATUS  |" >> $GITHUB_STEP_SUMMARY
-          echo "| unit-scan       | $CODE_UNIT_STATUS |" >> $GITHUB_STEP_SUMMARY
+          echo "| snyk-code-scan       | $SNYK_CODE_UNIT_STATUS |" >> $GITHUB_STEP_SUMMARY
+          echo "| snyk-iac-scan        | $SNYK_IAC_SCAN_STATUS  |" >> $GITHUB_STEP_SUMMARY
+          echo "| trivy-iac-scan        | $TRIVY_IAC_SCAN_STATUS  |" >> $GITHUB_STEP_SUMMARY
+          echo "| snyk-unit-scan       | $SNYK_CODE_UNIT_STATUS |" >> $GITHUB_STEP_SUMMARY
+          echo "| docker-build-scan       | $DOCKER_BUILD_SCAN_STATUS |" >> $GITHUB_STEP_SUMMARY
           
