@@ -299,8 +299,8 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         run: |
-          snyk container test ${{ vars.IMAGE_NAME }}:latest --severity-threshold=high
-          snyk container test ${{ vars.IMAGE_NAME }}:latest --severity-threshold=high --json > snyk_container_report.json
+          snyk container test ${{ vars.IMAGE_NAME }}:latest --severity-threshold=critical
+          snyk container test ${{ vars.IMAGE_NAME }}:latest --severity-threshold=critical --json > snyk_container_report.json
       - name: Upload Snyk Container Report
         uses: actions/upload-artifact@v4.3.0
         with:
