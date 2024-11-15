@@ -11,7 +11,7 @@ resource "aws_ecs_task_definition" "own_task_definition" {
   memory                   = 4096
 
   # For custom ECR image
-  # container_definitions = templatefile("./files/task-definition.json", {
+  # container_definitions = templatefile("../files/task-definition.json", {
   #   image_url        = "255945442255.dkr.ecr.us-east-1.amazonaws.com/luqman-test-ecr-repo:latest"
   #   container_name   = "luqman-test-ecs"
   #   port_name        = "luqman-test-ecs-8080-tcp"
@@ -21,7 +21,7 @@ resource "aws_ecs_task_definition" "own_task_definition" {
   # })
 
   # For nginx image
-  container_definitions = templatefile("./files/ecr-task-definition.json", {
+  container_definitions = templatefile("../files/ecr-task-definition.json", {
     image_url        = "${var.ecr_url}/${var.ecr_image_name}:latest"
     port_name        = var.ecs_port_name
     container_name   = var.ecs_container_name
