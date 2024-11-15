@@ -306,6 +306,14 @@ jobs:
         with:
           name: snyk-container-report
           path: snyk_container_report.json
+      - name: Docker Scout
+        id: docker-scout
+        uses: docker/scout-action@dd36f5b0295baffa006aa6623371f226cc03e506
+        with:
+          command: cves
+          image: ${{ vars.IMAGE_NAME }}:latest
+          only-severities: critical,high
+          exit-code: true
       - name: Docker publish to ECR
         run: docker push ${{ env.ECR_ENDPOINT }}/${{ vars.IMAGE_NAME }}:latest
 
