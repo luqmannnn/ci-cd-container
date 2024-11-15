@@ -306,13 +306,13 @@ jobs:
         with:
           name: snyk-container-report
           path: snyk_container_report.json
-      - name: Docker Scout
-        id: docker-scout
-        run: |
-          echo "Running simple docker scout"
-          docker scout quickview ${{ vars.IMAGE_NAME }}:latest
-          echo "Running detailed docker scout"
-          docker scout cves ${{ vars.IMAGE_NAME }}:latest
+      # - name: Docker Scout
+      #   id: docker-scout
+      #   run: |
+      #     echo "Running simple docker scout"
+      #     docker scout quickview ${{ vars.IMAGE_NAME }}:latest
+      #     echo "Running detailed docker scout"
+      #     docker scout cves ${{ vars.IMAGE_NAME }}:latest
       # - name: Docker publish to ECR
       #   run: docker push ${{ env.ECR_ENDPOINT }}/${{ vars.IMAGE_NAME }}:latest
       - name: Push to ECR
