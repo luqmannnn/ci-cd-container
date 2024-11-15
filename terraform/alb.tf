@@ -19,10 +19,10 @@ resource "aws_lb_target_group" "ecs-alb-tg" {
   protocol    = "HTTP"
   vpc_id      = data.aws_vpc.existing_vpc.id
   health_check {
-    path      = "/"
-    protocol  = "HTTP"
+    path     = "/"
+    protocol = "HTTP"
     interval = 300
-  } 
+  }
 }
 
 resource "aws_lb_listener" "front_end" {
