@@ -210,16 +210,13 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4.1.5
-      - name: Run Trivy vulnerability scanner in IaC mode
-        uses: aquasecurity/trivy-action@0.28.0
-        with:
-          scan-type: 'config'
-          hide-progress: true
-          format: 'sarif'
-          output: 'trivy-results.sarif'
-          exit-code: '1'
-          ignore-unfixed: true
-          severity: 'CRITICAL,HIGH'
+      - name: Setup Trivy
+        uses: aquasecurity/setup-trivy
+      - name: Run Trivy iac scan
+        run: | 
+          trivy conf --severith HIGH,CRITICAL .
+          trivy conf --severith HIGH,CRITICAL . > trivy-results.sarif
+          trivy conf --severith HIGH,CRITICAL . > trivy_iac_report.json
       - name: Upload Trivy scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v3
         with:
@@ -227,8 +224,8 @@ jobs:
       - name: Upload Snyk IaC Report
         uses: actions/upload-artifact@v4.3.0
         with:
-          name: snyk-iac-report
-          path: snyk_iac_report.json
+          name: trivy-iac-report
+          path: trivy_iac_report.json
 
   build-and-scan-image:
     runs-on: ubuntu-latest
