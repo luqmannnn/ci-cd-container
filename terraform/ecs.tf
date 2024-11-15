@@ -3,15 +3,15 @@
 # accordingly
 
 resource "aws_ecs_task_definition" "own_task_definition" {
-  family                    = var.ecs_task_defn_family # Update accordingly
-  requires_compatibilities  = ["FARGATE"]
-  network_mode              = "awsvpc"
-  execution_role_arn        = var.ex_role_arn
-  cpu                       = 2048
-  memory                    = 4096
+  family                   = var.ecs_task_defn_family # Update accordingly
+  requires_compatibilities = ["FARGATE"]
+  network_mode             = "awsvpc"
+  execution_role_arn       = var.ex_role_arn
+  cpu                      = 2048
+  memory                   = 4096
 
   # For custom ECR image
-  # container_definitions = templatefile("./files/task-definition.json", {
+  # container_definitions = templatefile("../files/task-definition.json", {
   #   image_url        = "255945442255.dkr.ecr.us-east-1.amazonaws.com/luqman-test-ecr-repo:latest"
   #   container_name   = "luqman-test-ecs"
   #   port_name        = "luqman-test-ecs-8080-tcp"
@@ -21,7 +21,7 @@ resource "aws_ecs_task_definition" "own_task_definition" {
   # })
 
   # For nginx image
-  container_definitions = templatefile("./files/ecr-task-definition.json", {
+  container_definitions = templatefile("../files/ecr-task-definition.json", {
     image_url        = "${var.ecr_url}/${var.ecr_image_name}:latest"
     port_name        = var.ecs_port_name
     container_name   = var.ecs_container_name
@@ -49,8 +49,8 @@ resource "aws_ecs_service" "own_service" {
   force_new_deployment = true
 
   deployment_circuit_breaker {
-    enable          = true
-    rollback        = true
+    enable   = true
+    rollback = true
   }
 
   load_balancer {
@@ -62,6 +62,6 @@ resource "aws_ecs_service" "own_service" {
   network_configuration {
     subnets          = data.aws_subnets.existing_subnets.ids
     assign_public_ip = true
-    security_groups = [var.sg_id]
+    security_groups  = [var.sg_id]
   }
 }
