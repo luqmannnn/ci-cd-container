@@ -214,20 +214,52 @@ jobs:
         uses: aquasecurity/setup-trivy@v0.2.2
         with:
           version: v0.56.2
+          token: ${{ secrets.GITHUB_TOKEN }}
       - name: Run Trivy iac scan
         run: | 
-          trivy conf --severith HIGH,CRITICAL .
-          trivy conf --severith HIGH,CRITICAL . > trivy-results.sarif
-          trivy conf --severith HIGH,CRITICAL . > trivy_iac_report.json
+          trivy conf . --severity HIGH,CRITICAL
+          trivy conf . --severity HIGH,CRITICAL --format json > trivy-results.sarif
+          trivy conf . --severity HIGH,CRITICAL --format json > trivy_iac_report.json
       - name: Upload Trivy scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: 'trivy-results.sarif'
-      - name: Upload Snyk IaC Report
+      - name: Upload Trivy IaC Report
         uses: actions/upload-artifact@v4.3.0
         with:
           name: trivy-iac-report
           path: trivy_iac_report.json
+
+  trivy-fs-vulnerability-scanning:
+    runs-on: ubuntu-latest
+    needs: [install-dependencies, code-ql-scanning]
+    defaults:
+      run:
+        working-directory: files
+    outputs:
+      status: ${{ job.status }}
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4.1.5
+      - name: Setup Trivy
+        uses: aquasecurity/setup-trivy@v0.2.2
+        with:
+          version: v0.56.2
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Run Trivy fs scan
+        run: | 
+          trivy fs . --severity HIGH,CRITICAL
+          trivy fs . --severity HIGH,CRITICAL --format json > trivy-fs-results.sarif
+          trivy fs . --severity HIGH,CRITICAL --format json > trivy_fs_report.json
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-fs-results.sarif'
+      - name: Upload Trivy FS Report
+        uses: actions/upload-artifact@v4.3.0
+        with:
+          name: trivy-fs-report
+          path: trivy_fs_report.json
 
   build-and-scan-image:
     runs-on: ubuntu-latest
