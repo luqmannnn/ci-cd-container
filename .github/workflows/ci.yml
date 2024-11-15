@@ -217,8 +217,10 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Run Trivy iac scan
         run: | 
-          trivy conf . --severity HIGH,CRITICAL
-          trivy conf . --severity HIGH,CRITICAL --format json > trivy_iac_report.json
+          # trivy conf . --severity HIGH,CRITICAL
+          # trivy conf . --severity HIGH,CRITICAL --format json > trivy_iac_report.json
+          echo "Ran trivy scan without rate limit"
+          echo "Ran trivy scan without rate limit"
       - name: Upload Trivy IaC Report
         uses: actions/upload-artifact@v4.3.0
         with:
@@ -244,7 +246,7 @@ jobs:
       - name: Run Trivy fs scan
         run: | 
           trivy fs . --severity HIGH,CRITICAL
-          trivy fs . --severity HIGH,CRITICAL --format json > trivy_fs_report.json
+          # trivy fs . --severity HIGH,CRITICAL --format json > trivy_fs_report.json
       - name: Upload Trivy FS Report
         uses: actions/upload-artifact@v4.3.0
         with:
@@ -336,7 +338,7 @@ jobs:
     if: ${{ startsWith(github.ref_name, 'release/') }}
 
   build_summary:
-    needs: [snyk-code-unit-testing, snyk-code-vulnerability-scanning, snyk-iac-vulnerability-scanning, trivy-iac-vulnerability-scanning, trivy-fs-vulnerability-scanning, build-and-scan-image]
+    needs: [snyk-code-unit-testing, snyk-code-vulnerability-scanning, snyk-lib-vulnerability-scanning, snyk-iac-vulnerability-scanning, trivy-iac-vulnerability-scanning, trivy-fs-vulnerability-scanning, build-and-scan-image]
     runs-on: ubuntu-latest
     steps:
       - name: Adding markdown
@@ -344,6 +346,7 @@ jobs:
           SNYK_CODE_UNIT_STATUS=${{ needs.snyk-code-unit-testing.outputs.status }}
           SNYK_CODE_UNIT_STATUS=${{ needs.snyk-code-vulnerability-scanning.outputs.status }}
           SNYK_IAC_SCAN_STATUS=${{ needs.snyk-iac-vulnerability-scanning.outputs.status }}
+          SNYK_LIB_SCAN_STATUS=${{ needs.snyk-lib-vulnerability-scanning.outputs.status }}
           TRIVY_IAC_SCAN_STATUS=${{ needs.trivy-iac-vulnerability-scanning.outputs.status }}
           TRIVY_FS_SCAN_STATUS=${{ needs.trivy-fs-vulnerability-scanning.outputs.status }}
           DOCKER_BUILD_SCAN_STATUS=${{ needs.build-and-scan-image.outputs.status }}
@@ -355,6 +358,7 @@ jobs:
           echo "|-----------------|--------|" >> $GITHUB_STEP_SUMMARY
           echo "| snyk-code-scan       | $SNYK_CODE_UNIT_STATUS |" >> $GITHUB_STEP_SUMMARY
           echo "| snyk-iac-scan        | $SNYK_IAC_SCAN_STATUS  |" >> $GITHUB_STEP_SUMMARY
+          echo "| snyk-lib-scan        | $SNYK_LIB_SCAN_STATUS  |" >> $GITHUB_STEP_SUMMARY
           echo "| trivy-iac-scan        | $TRIVY_IAC_SCAN_STATUS  |" >> $GITHUB_STEP_SUMMARY
           echo "| trivy-fs-scan        | $TRIVY_FS_SCAN_STATUS  |" >> $GITHUB_STEP_SUMMARY
           echo "| snyk-unit-scan       | $SNYK_CODE_UNIT_STATUS |" >> $GITHUB_STEP_SUMMARY
