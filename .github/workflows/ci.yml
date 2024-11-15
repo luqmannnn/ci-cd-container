@@ -214,8 +214,6 @@ jobs:
         uses: aquasecurity/setup-trivy@v0.2.2
         with:
           version: v0.56.2
-          cache: true
-          token: ${{ secrets.GITHUB_PAT }}
       - name: Run Trivy iac scan
         run: | 
           trivy conf --severith HIGH,CRITICAL .
