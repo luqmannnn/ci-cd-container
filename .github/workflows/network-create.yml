@@ -9,6 +9,11 @@ on:
             - create
             - destroy
         description: Select the action, whether to create or destroy VPC cluster
+  workflow_call:
+    inputs:
+      action:
+        type: string
+        description: Select the action, whether to create or destroy VPC cluster
 
 jobs:
   create-network:
