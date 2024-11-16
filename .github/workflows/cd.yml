@@ -33,6 +33,14 @@ jobs:
           echo "env selected is ${{ inputs.target_env }}"
           echo "action selected is ${{ inputs.action }}"
 
+    vpc-create:
+      needs: pre-action-step
+      uses: luqmannnn/ci-cd-container/.github/workflows/network-create.yml@main
+      name: Create VPC before creating ECS
+      with:
+        action: create
+      secrets: inherit 
+
     create-or-delete-ecs-cluster:
       needs: [pre-action-step]
       runs-on: ubuntu-latest

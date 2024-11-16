@@ -2,7 +2,7 @@ resource "aws_lb" "ecs-alb" {
   name               = "luqman-ecs-alb"
   internal           = false
   load_balancer_type = "application"
-  security_groups    = [var.sg_id]
+  security_groups    = [aws_security_group.ec2_sg.id]
   subnets            = toset(data.aws_subnets.existing_subnets.ids)
 
   enable_deletion_protection = false

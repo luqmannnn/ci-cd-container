@@ -62,6 +62,6 @@ resource "aws_ecs_service" "own_service" {
   network_configuration {
     subnets          = data.aws_subnets.existing_subnets.ids
     assign_public_ip = true
-    security_groups  = [var.sg_id]
+    security_groups  = [aws_security_group.ec2_sg.id]
   }
 }
