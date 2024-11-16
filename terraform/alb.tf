@@ -17,7 +17,7 @@ resource "aws_lb_target_group" "ecs-alb-tg" {
   target_type = "ip"
   port        = 80
   protocol    = "HTTP"
-  vpc_id      = data.aws_vpc.existing_vpc.id
+  vpc_id      = data.aws_vpc.vpc.id
   health_check {
     path     = "/"
     protocol = "HTTP"
