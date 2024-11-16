@@ -2,7 +2,7 @@ resource "aws_lb" "ecs-alb" {
   name               = "luqman-ecs-alb"
   internal           = false
   load_balancer_type = "application"
-  security_groups    = [var.sg_id]
+  security_groups    = [aws_security_group.ec2_sg.id]
   subnets            = toset(data.aws_subnets.existing_subnets.ids)
 
   enable_deletion_protection = false
@@ -17,7 +17,7 @@ resource "aws_lb_target_group" "ecs-alb-tg" {
   target_type = "ip"
   port        = 80
   protocol    = "HTTP"
-  vpc_id      = data.aws_vpc.existing_vpc.id
+  vpc_id      = data.aws_vpc.vpc.id
   health_check {
     path     = "/"
     protocol = "HTTP"

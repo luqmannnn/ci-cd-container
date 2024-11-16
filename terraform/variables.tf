@@ -1,7 +1,13 @@
-variable "vpc_id" {
-  description = "The ID of the VPC"
+variable "vpc_name" {
+  description = "The name of the VPC"
   type        = string
-  default     = "vpc-0aa58eaabb536e7d3" # Change accordingly
+  default     = "luqman-tf-vpc" # Change accordingly
+}
+
+variable "subnet_name_prefix" {
+  description = "The name of the subnets to use"
+  type        = string
+  default     = "luqman-tf-vpc-public" # Change accordingly
 }
 
 variable "ex_role_arn" {
@@ -10,10 +16,10 @@ variable "ex_role_arn" {
   default     = "arn:aws:iam::255945442255:role/ecsTaskExecutionRole"
 }
 
-variable "sg_id" {
+variable "sg_name" {
   description = "The security group id"
   type        = string
-  default     = "sg-0d27b7c2a485d0c74" # Change accordingly
+  default     = "luqman-sg-tf-allow-http" # Change accordingly
 }
 
 variable "ecs_cluster_name" {
